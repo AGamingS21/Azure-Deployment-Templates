@@ -7,8 +7,6 @@ on:
   workflow_dispatch:
 
 env:
-  WEBAPP_NAME: BlazorAppDeploymentSlots
-  RESOURCE_GROUP: WebAppDeploymentSlots
   SLOT_NAME: staging
 
 permissions:
@@ -37,15 +35,15 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: web-app
-          path: ./build # Path to the directory or file to upload
+          path: ./build
   
   deploy_to_staging:
     name: Deploy to staging
     needs: build
     runs-on: ubuntu-latest
-    environment:
-      name: 'Staging'
-      url: ${{ steps.deploy_to_staging.outputs.webapp-url }}
+    # environment:
+    #   name: 'Staging'
+    #   url: ${{ steps.deploy_to_staging.outputs.webapp-url }}
 
     steps:
     - name: Azure login
@@ -72,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: 'Production'
-      url: ${{ steps.release-to-prod.outputs.webapp-url }}
+      #url: ${{ steps.release-to-prod.outputs.webapp-url }}
     steps:
     - name: Azure login
       uses: azure/login@v2
