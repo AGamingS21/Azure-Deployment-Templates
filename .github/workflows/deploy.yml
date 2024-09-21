@@ -1,0 +1,84 @@
+name: Deploying App
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  WEBAPP_NAME: BlazorAppDeploymentSlots
+  RESOURCE_GROUP: WebAppDeploymentSlots
+  SLOT_NAME: staging
+
+permissions:
+  contents: 'read'
+  id-token: 'write'
+
+jobs:
+  
+  build:
+    
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.401'
+      - run: dotnet build
+    
+      
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.401'
+      - run: dotnet publish --configuration Release --output ./build/
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-app
+          path: ./build # Path to the directory or file to upload
+  
+  deploy_to_staging:
+    name: Deploy to staging
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: 'Staging'
+      url: ${{ steps.deploy_to_staging.outputs.webapp-url }}
+
+    steps:
+    - name: Azure login
+      uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Download artifact from build job
+      uses: actions/download-artifact@v4
+      with:
+        name: web-app
+        path: ./build
+    
+    - name: Deploy to stage env
+      uses: azure/webapps-deploy@v1
+      id: deploy-to-stage
+      with: 
+        app-name: ${{ secrets.WEBAPP_NAME }}
+        slot-name:  ${{ env.SLOT_NAME }}
+        package: './build'
+  release-to-prod:
+    name: Release to prod
+    needs: deploy_to_staging
+    runs-on: ubuntu-latest
+    environment:
+      name: 'Production'
+      url: ${{ steps.release-to-prod.outputs.webapp-url }}
+    steps:
+    - name: Azure login
+      uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Swap slots
+      run: az webapp deployment slot swap -s ${{ env.SLOT_NAME }} -n ${{ secrets.WEBAPP_NAME }} -g ${{ secrets.RESOURCE_GROUP }}
+    

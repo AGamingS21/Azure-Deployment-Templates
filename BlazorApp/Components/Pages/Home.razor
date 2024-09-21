@@ -1,0 +1,40 @@
+﻿@page "/"
+@using BlazorApp.Services
+@using BlazorApp.Models
+@inject TableStorageService tableStorageService
+@inject IConfiguration _configuration
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Demo Pipeline for deploying a web app with classic pipelines. I think this is going to work!!
+
+<h3>Table Data</h3>
+
+@if (_entities == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <ul>
+    @foreach (var item in _entities)
+    {
+        <li>@item.PartitionKey</li>
+    }
+</ul>
+}
+
+
+@code{        
+    private List<TestEntity>?_entities;
+
+    protected override async Task OnInitializedAsync()
+    {
+        string tableName = _configuration["Storage:TableName"];
+
+        tableStorageService.CreateTestData(tableName);
+        _entities = await tableStorageService.GetEntitiesAsync(tableName);
+    }
+}
