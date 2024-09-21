@@ -7,8 +7,6 @@ on:
   workflow_dispatch:
 
 env:
-  WEBAPP_NAME: BlazorAppDeploymentSlots
-  RESOURCE_GROUP: WebAppDeploymentSlots
   SLOT_NAME: staging
 
 permissions:
