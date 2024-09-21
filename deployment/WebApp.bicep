@@ -5,7 +5,8 @@ param location string = resourceGroup().location // Location for all resources
 param objectId string
 param vaultName string
 param storageAccountName string
-
+var tableNameVar = 'TableName'
+var tableUriVar = 'TableStorageUri'
 var tableNameProd = 'blazortable'
 var tableNameStage = 'blazortableStage'
 var tableStorageUri = 'https://${storageAccountName}.table.${environment().suffixes.storage}'
@@ -45,11 +46,11 @@ resource appService 'Microsoft.Web/sites@2022-09-01' = {
         //   value: appInsights.properties.InstrumentationKey
         // }
         {
-          name: 'TableName'
+          name: tableNameVar
           value: tableNameProd
         }
         {
-          name: 'TableStorageUri'
+          name: tableUriVar
           value: tableStorageUri
         }
       ]
@@ -79,11 +80,11 @@ resource stagingSlot 'Microsoft.Web/sites/slots@2022-09-01' = {
         //   value: appInsights.properties.InstrumentationKey
         // }
         {
-          name: 'TableName'
+          name: tableNameVar
           value: tableNameStage
         }
         {
-          name: 'TableStorageUri'
+          name: tableUriVar
           value: tableStorageUri
         }
       ]
@@ -91,6 +92,17 @@ resource stagingSlot 'Microsoft.Web/sites/slots@2022-09-01' = {
   }
   identity: {
     type: 'SystemAssigned'
+  }
+}
+
+resource webAppStagingSlotConfig 'Microsoft.Web/sites/config@2021-03-01' = {
+  name: 'slotConfigNames'
+  parent: appService
+  properties: {
+    appSettingNames: [
+      tableNameVar
+      tableUriVar
+    ]
   }
 }
 

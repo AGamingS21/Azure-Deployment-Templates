@@ -19,6 +19,8 @@ In order to push the scripts to github make sure that a personal access token is
 - Write Secrets to Repository
 - Trigger Workflows
 
+For PRs going through make sure that the production environment is created in the repo settings and add at least 1 approver is on. This will prevent an immediate release to production and require an approval first.
+
 ## How to Run
 
 ### Creating Web App
@@ -50,6 +52,11 @@ If you need to clean up the resources the run the Delete Web App vscode task whi
 Bicep:
 - Create Log Analytics and App insights in Bicep
 - Add in the name of the production and staging app settings for the storage account in the deployment slots
+
+CI/CD:
+- Run the build stage during pull requests as a build validation
+- Ensure the production enviornment is created before triggering workflow.
+- Wait and approve to production environment check
 
 ## Contributing
 PRs are always welcome!
